@@ -9,7 +9,9 @@ export const pluck = (key:string) => (xs:object) => xs[key]
 const  { floor, random, min, max, cos, sin, PI } = Math
 export { floor, random, min, max, cos, sin, PI }
 
-export const div = (a:number, b:number) => floor(a / b)
+export const lerp = (a:number, b:number, t:number) => a + (b - a) * t
+export const div  = (a:number, b:number) => floor(a / b)
+export const rand = (a = 1, b = a) => lerp(a, b, random())
 
 
 // Async

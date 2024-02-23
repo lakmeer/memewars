@@ -17,7 +17,6 @@ export default class Grid {
     this.h = h
     this.data = new Array(w * h).fill(0)
     this.max = 0
-    this.total = 0
   }
 
   inBounds (x: number, y: number) {
@@ -81,7 +80,6 @@ export default class Grid {
   clear () {
     this.data.fill(0)
     this.max = 0
-    this.total = 0
   }
 
   blend (grid:Grid, pool:number) {

@@ -1,30 +1,23 @@
 <script lang="ts">
-
   import { onMount } from 'svelte'
-
-  import { div } from '$lib/utils'
-
-  const { min, max, floor } = Math
-  const rand = (n = 1) => Math.random() * n
-
-  const formatRgb = ([ r, g, b ]:RgbColor):string =>
-    `rgb(${floor(r*255)},${floor(g*255)},${floor(b*255)})`
-
-  const pos = (x:number, y =  x) => ({ x, y })
+  import { min, max, div, rand, floor } from '$lib/utils'
 
   import Meme  from '$lib/meme'
   import Grid  from '$lib/grid'
   import World from '$lib/world'
 
+  const pos = (x:number, y =  x) => ({ x, y })
+
+  const formatRgb = ([ r, g, b ]:RgbColor):string =>
+    `rgb(${floor(r*255)},${floor(g*255)},${floor(b*255)})`
+
 
   // Setup
 
-  const RESOLUTION = 800
+  const RESOLUTION  = 800
   const WORLD_SIZE  = 15
-  const FILL_RATE = 12
-  const DECAY = 0.9
-  const MIN_KERNEL_LEVEL = 1
-  const TICK_LENGTH   = 100
+  const TICK_LENGTH = 100
+  const INJECT_RATE = 1000/TICK_LENGTH
 
 
   // State
@@ -33,6 +26,10 @@
   let ctx: CanvasRenderingContext2D
 
   let mouse = { x: 0, y: 0, active: false }
+  let placeIx = 0
+
+
+  // Game state
 
   const game = {
     world: new World(WORLD_SIZE, WORLD_SIZE),
@@ -63,8 +60,6 @@
 
   game.memes[0].setPolicy(() => game.memes[0].kernels.BLAST)
   game.memes[1].setPolicy(() => game.memes[1].kernels.GAUSSIAN)
-
-  let placeIx = 0
 
 
   // Functions
@@ -145,7 +140,7 @@
 
     let Z = setInterval(() => {
       frame++
-      game.memes.forEach(meme => meme.step(null, frame))
+      game.memes.forEach(meme => meme.step(null, frame, frame % INJECT_RATE === 0))
       draw()
     }, TICK_LENGTH)
 

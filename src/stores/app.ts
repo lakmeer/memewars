@@ -4,7 +4,7 @@ import { type Writable } from 'svelte/store'
 
 import { slugify, unslugify } from '$lib/utils'
 
-import { DEFAULT_LIMIT, DEFAULT_THRESHOLD, KEY_APP_STATE } from '$lib/const'
+import { KEY_APP_STATE } from '$lib/const'
 
 const STATE_REVISION = 1
 

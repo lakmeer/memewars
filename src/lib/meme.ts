@@ -39,6 +39,7 @@ export default class Meme {
 
   pool: number        // How much can be placed per tick
 
+
   constructor (id: string, worldSize:number, color: RgbColor, banner: string) {
     this.id = id
 
@@ -56,8 +57,8 @@ export default class Meme {
     this.policy = (clip:Grid) => this.kernels.UNITARY
   }
 
-  allocate (frame:number) {
-    // Run kernel policy
+
+  allocate (inject:boolean) {
     this.thisField.each((x, y, v) => {
       if (v > MIN_KERNEL_LEVEL) {
         let input  = this.thisField.clip(x, y, KERNEL_SIZE)
@@ -66,12 +67,12 @@ export default class Meme {
       }
     })
 
-    //this.placement.normalise()
-
     // Beacon pulse
-    this.members.forEach((member:Player) => {
-      this.placement.add(member.beacon.x, member.beacon.y, POOL_PER_PLAYER)
-    })
+    if (inject) {
+      this.members.forEach((member:Player) => {
+        this.placement.add(member.beacon.x, member.beacon.y, POOL_PER_PLAYER * this.members.length)
+      })
+    }
   }
 
   spread () {
@@ -89,11 +90,10 @@ export default class Meme {
     })
   }
 
-  step (world:Grid, frame:number) {
+  step (world:Grid, frame:number, inject:boolean) {
 
-    // Run policy and physics
-    this.allocate()   // writes to placement field
-    this.spread()     // writes to next field
+    this.allocate(inject)   // writes to placement field
+    this.spread()           // writes to next field
 
     this.nextField.blend(this.placement, this.pool)   // updates next field
 
