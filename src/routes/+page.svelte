@@ -11,6 +11,8 @@
   const formatRgb = ([ r, g, b ]:RgbColor):string =>
     `rgb(${floor(r*255)},${floor(g*255)},${floor(b*255)})`
 
+  const DEFAULT_STATS_MAX = 100
+
 
   // Setup
 
@@ -74,6 +76,7 @@
     const b = game.memes[placeIx].members[0].beacon
     b.x = mouse.x
     b.y = mouse.y
+    game.memes[0].active = !game.memes[0].active
   }
 
   function mouseUp () {
@@ -94,6 +97,34 @@
 
 
   // Drawing
+
+  let maxTotal = DEFAULT_STATS_MAX
+
+  function drawStats (meme:Meme, x:number, y:number) {
+    let stride = RESOLUTION / WORLD_SIZE
+    let pad = stride / 3
+
+    ctx.globalCompositeOperation = 'source-over'
+    ctx.font = `${stride/3}px monospace`
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
+
+    ctx.fillStyle = '#123'
+    ctx.fillRect(x, y, stride * 3, stride)
+    ctx.fillStyle = formatRgb(meme.color)
+    ctx.fillText(meme.banner, x + stride * 3 + pad, y + stride/2)
+
+    let bar = stride / meme.stats.hist.length * 2
+    ctx.textAlign = 'center'
+    ctx.fillText(meme.stats.total.toFixed(0), x + stride/2, y + stride/2)
+
+    for (let i = 0; i < meme.stats.hist.length; i++) {
+      let v = meme.stats.hist[i]
+      if (v > maxTotal) maxTotal += 100
+      let h = stride * v/maxTotal * 0.8
+      ctx.fillRect(stride + x + i * bar, y + stride - h - stride/10, bar, h)
+    }
+  } 
 
   function draw () {
     let stride = RESOLUTION / WORLD_SIZE
@@ -119,6 +150,11 @@
       meme.members.forEach(member => {
         ctx.strokeRect(member.beacon.x * stride, member.beacon.y * stride, stride, stride)
       })
+    })
+
+    // Stats overlay
+    game.memes.forEach((meme, ix) => {
+      drawStats(meme, 0, stride * ix)
     })
 
     // Draw mouse position

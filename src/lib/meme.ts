@@ -8,6 +8,7 @@ const POOL_PER_PLAYER  = 10
 const MIN_KERNEL_LEVEL = 1
 const KERNEL_SIZE      = 5
 const DEATH_THRESHOLD  = 1
+const HISTORY_LENGTH   = 50
 
 
 //
@@ -38,7 +39,9 @@ export default class Meme {
   policy: Policy      // Current kernel policy
 
   pool: number        // How much can be placed per tick
+  active: boolean     // Running or not
 
+  stats: MemeStats
 
   constructor (id: string, worldSize:number, color: RgbColor, banner: string) {
     this.id = id
@@ -55,6 +58,13 @@ export default class Meme {
     this.pool = POOL_PER_PLAYER
 
     this.policy = (clip:Grid) => this.kernels.UNITARY
+
+    this.active = true
+
+    this.stats = {
+      total: 0,
+      hist: [ 0 ]
+    }
   }
 
 
@@ -70,7 +80,7 @@ export default class Meme {
     // Beacon pulse
     if (inject) {
       this.members.forEach((member:Player) => {
-        this.placement.add(member.beacon.x, member.beacon.y, POOL_PER_PLAYER * this.members.length)
+        this.nextField.add(member.beacon.x, member.beacon.y, POOL_PER_PLAYER)
       })
     }
   }
@@ -91,9 +101,17 @@ export default class Meme {
   }
 
   step (world:Grid, frame:number, inject:boolean) {
+    if (!this.active) {
+      this.spread()           // writes to next field
+      let temp = this.thisField
+      this.thisField = this.nextField
+      this.nextField = temp
+      this.pushHistory()
+      return
+    }
 
-    this.allocate(inject)   // writes to placement field
     this.spread()           // writes to next field
+    this.allocate(inject)   // writes to placement field
 
     this.nextField.blend(this.placement, this.pool)   // updates next field
 
@@ -101,10 +119,17 @@ export default class Meme {
     let temp = this.thisField
     this.thisField = this.nextField
     this.nextField = temp
+    this.pushHistory()
 
     // Prepare a clean frame
     this.placement.clear()
     this.nextField.clear()
+  }
+
+  pushHistory () {
+    this.stats.total = this.thisField.sum()
+    this.stats.hist.push(this.stats.total)
+    if (this.stats.hist.length > HISTORY_LENGTH) this.stats.hist.shift()
   }
 
   joinMember (player:Player) {

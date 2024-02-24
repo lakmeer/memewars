@@ -56,6 +56,11 @@ declare global {
     beacon: Pos
   }
 
+  type MemeStats = {
+    total: number
+    hist: number[]
+  }
+
   type Policy = (clip:Grid) => Grid
 
 
